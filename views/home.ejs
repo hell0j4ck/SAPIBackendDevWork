@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+
+
+    <div class="home-container">
+
+        <h1 id="home-title">ScreenShot API</h1>
+
+
+        <!-- <a href="/form" id="start">Start Here</a> -->
+
+        <p id="description">Step 1: Choose a Filetype that you wish to receive. <br><br>
+            Step 2: Post full url and submit.
+        </p><br><br><br><br>
+
+        <p id="note">Note: Make sure that the url is complete with https:// at the beginning. If the URL is
+            invalid, you will receive a file containing a note that the url is invalid or the connections has timed out.
+        </p>
+
+        <h2>Submit URL</h2>
+
+
+
+
+        <form action="/" method="POST">
+
+            <div class="dropdown-container">
+
+                <label for="format">File Type:</label>
+                <select name="format" id="format">
+
+                    <option value="screenshot">Screenshot (PNG)</option>
+                    <option value="pdf">PDF</option>
+
+
+                </select>
+
+            </div>
+
+
+            <input type="text" name="url" id="url" placeholder="URL" required>
+            <button>Submit</button>
+        </form>
+
+
+
+    </div>
+
+
+    <footer>
+
+        <p>Developer: <%= developer %>
+        </p>
+        
+        
+
+    </footer>
+
+
+
+</body>
+
+</html>
