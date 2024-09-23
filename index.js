@@ -22,7 +22,7 @@ app.use(express.static('public'))
 app.set("view engine", "ejs");
 app.set('views', __dirname + '/views')
 app.set('pdfs', __dirname + '/pdfs')
-
+app.set('trust proxy', true);
 
 app.listen(port, () => {
 
@@ -37,37 +37,21 @@ app.get('/', (req, res) => {
 
 })
 
-app.post('/', (req, res) => {
+app.get('/checkip', async(req,res)=>{
 
-    const { format, url } = req.body
-
-    if (format === 'screenshot') {
-
-        res.redirect(`/screenshot?url=${url}`)
-
-
-    } else {
-
-        res.redirect(`/pdf?url=${url}`)
-
-    }
+const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+console.log(`Request from: ${req.hostname} with IP ${ip}`)
+res.send(`Request from: ${req.hostname} with IP ${ip}`)
 
 })
 
-
-
-// app.get('/form', (req, res) => {
-
-
-//     res.render('form.ejs')
-
-// })
-
-
 app.get('/pdf', async (req, res) => {
 
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
+    const hostname = req.headers['origin-host']   
+    console.log(`Request from: ${hostname} with IP ${ip}`)
 
-    if (!req.hostname === "sapidev.ccedev.net") {
+    if (hostname != "sapidev.ccedev.net") {
 
         res.send("<h1>UNAUTHORIZED.</h1>")
 
@@ -248,8 +232,11 @@ app.get('/pdf', async (req, res) => {
 
 app.get('/screenshot', async (req, res) => {
 
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    const hostname = req.headers['origin-host']
+    console.log(`Request from: ${hostname} with IP ${ip}`)
 
-    if (!req.hostname === "sapidev.ccedev.net") {
+    if (hostname != "sapidev.ccedev.net") {
 
         res.send("<h1>UNAUTHORIZED.</h1>")
 
