@@ -9,7 +9,8 @@ const { v4: uuid } = require('uuid');
 const fs = require('fs');
 const { timeout } = require('puppeteer');
 const cors = require('cors')
-const { port } = require('./serverconfig.json')
+const { port } = require('./serverconfig.json');
+const { time } = require('console');
 
 app.use(cors({
     origin: ["https://sapidev.ccedev.net", "http://sapidev.ccedev.net"]
@@ -32,23 +33,45 @@ app.listen(port, () => {
 
 app.get('/', (req, res) => {
 
-
-    res.send("API Online")
+    // Get Today's Date and Time
+    const today = new Date()
+    const date = `${today.getMonth() + 1}-${today.getDate()}-${today.getFullYear()}`
+    const time = `${today.getHours()}h${today.getMinutes()}`
+    // ---------------------------
+    res.send(`API Online ${date}-${time}`)
 
 })
 
-app.get('/checkip', async(req,res)=>{
 
-const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
-console.log(`Request from: ${req.hostname} with IP ${ip}`)
-res.send(`Request from: ${req.hostname} with IP ${ip}`)
+app.get('/testdomainname', async (req, res) => {
+
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    const hostname = req.headers['origin-host']
+    console.log(`Request from: ${hostname} with IP ${ip}`)
+
+    console.log('RECEIVED SOMETHING!')
+    console.log(req.query)
+
+    const submittedDomain = ((req.query.url).split("//")[1]).split(".")
+    const domainName = submittedDomain[0] == 'www' ? submittedDomain[1] : submittedDomain[0]
+    console.log(submittedDomain)
+    console.log(domainName)
+    res.send(domainName)
+
+})
+
+app.get('/checkip', async (req, res) => {
+
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    console.log(`Request from: ${req.hostname} with IP ${ip}`)
+    res.send(`Request from: ${req.hostname} with IP ${ip}`)
 
 })
 
 app.get('/pdf', async (req, res) => {
 
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
-    const hostname = req.headers['origin-host']   
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    const hostname = req.headers['origin-host']
     console.log(`Request from: ${hostname} with IP ${ip}`)
 
     if (hostname != "sapidev.ccedev.net") {
@@ -61,8 +84,18 @@ app.get('/pdf', async (req, res) => {
         // USE req.query to post url as query string
         // USE req.body to post the url in the request body from form
         console.log('RECEIVED SOMETHING!')
-        console.log(req.body)
         console.log(req.query)
+
+        // Extract Domain Name
+        const submittedDomain = ((req.query.url).split("//")[1]).split(".")
+        const domainName = submittedDomain[0] == 'www' ? submittedDomain[1] : submittedDomain[0]
+        // ---------------------------
+
+        // Get Today's Date and Time
+        const today = new Date()
+        const date = `${today.getMonth() + 1}-${today.getDate()}-${today.getFullYear()}`
+        const time = `${today.getHours()}h${today.getMinutes()}`
+        // ---------------------------
 
         const { url } = req.query
         console.log(url)
@@ -162,7 +195,17 @@ app.get('/pdf', async (req, res) => {
 
             // Generates a unique ID for the PDF 
             const fileId = uuid()
-            const fileName = `result-${fileId}.pdf`
+            const fileName = `${domainName}_${date}_${time}_${fileId}.pdf`
+
+            // This Block of code allows the custom name of the file and sets the content inline instead of attachement which would download the file
+            // Inline downloads the file. 
+            // Using this line allows the custom name to populate the file name when user is downloading the file
+            res.set({
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': `inline; filename=${fileName}`, 
+            });
+
+            // --------------------------------------
 
             // Remove All Links
             await page.evaluate(_ => {
@@ -176,7 +219,7 @@ app.get('/pdf', async (req, res) => {
 
             // Prints to PDF and saves under PATH
             const pdf = await page.pdf({
-                path: `./pdfs/result-${fileId}.pdf`,
+                path: `./pdfs/${domainName}_${date}_${time}_${fileId}.pdf`,
                 margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
                 printBackground: true,
                 format: 'A4',
@@ -185,14 +228,13 @@ app.get('/pdf', async (req, res) => {
 
 
             // Closes the browser session
-
             await browser.close();
 
-            // res.send("HELLO!")
+            console.log(fileName)
             res.status(200).sendFile(path.join(__dirname, `/pdfs/${fileName}`));
 
 
-            // res.render('result.ejs', { fileId, fileName })   
+
 
 
 
@@ -248,6 +290,18 @@ app.get('/screenshot', async (req, res) => {
         console.log('RECEIVED SOMETHING!')
         console.log(req.body)
         console.log(req.query)
+
+
+        // Extract Domain Name
+        const submittedDomain = ((req.query.url).split("//")[1]).split(".")
+        const domainName = submittedDomain[0] == 'www' ? submittedDomain[1] : submittedDomain[0]
+        // ---------------------------
+
+        // Get Today's Date and Time
+        const today = new Date()
+        const date = `${today.getMonth() + 1}-${today.getDate()}-${today.getFullYear()}`
+        const time = `${today.getHours()}h${today.getMinutes()}`
+        // ---------------------------
 
         const { url } = req.query
         console.log(url)
@@ -332,16 +386,24 @@ app.get('/screenshot', async (req, res) => {
 
 
 
-            // await page.waitForSelector('p', { timeout: 5_000 });
-            // await page.waitForSelector('a', { timeout: 5_000 });
-
-            console.log("Finished Waiting For Page Load.")
+            console.log("Finished Waiting For Page Load.");
             await page.emulateMediaType('screen');
 
 
             // Generates a unique ID for the PDF 
             const fileId = uuid()
-            const fileName = `result-${fileId}.png`
+            const fileName = `${domainName}_${date}_${time}_${fileId}.png`
+
+
+            // This Block of code allows the custom name of the file and sets the content inline instead of attachement which would download the file
+            // Inline downloads the file. 
+            // Using this line allows the custom name to populate the file name when user is downloading the file
+            res.set({
+                'Content-Type': 'image/png',
+                'Content-Disposition': `inline; filename=${fileName}`
+            });
+            // -------------------------------------
+
 
             const wait = t => new Promise((resolve, reject) => setTimeout(resolve, t))
 
@@ -351,10 +413,9 @@ app.get('/screenshot', async (req, res) => {
                 console.log("Generating Screenshot...")
                 await page.screenshot({
 
-
-                    "type": "png", // can also be "jpeg" or "webp" (recommended)
-                    "path": `./screenshots/result-${id}.png`,  // where to save it
-                    "fullPage": true,  // will scroll down to capture everything if true
+                    type: "png", // can also be "jpeg" or "webp" (recommended)
+                    path: `./screenshots/${domainName}_${date}_${time}_${id}.png`,  // where to save it
+                    fullPage: true,  // will scroll down to capture everything if true
 
                 });
 
