@@ -13,12 +13,17 @@ const { port } = require('./serverconfig.json');
 const { time } = require('console');
 
 app.use(cors({
-    origin: ["https://sapidev.ccedev.net", "http://sapidev.ccedev.net"]
+    origin: ["https://sapidev.ccedev.net", "http://sapidev.ccedev.net","http://localhost:5173"],
+    exposedHeaders:"*"
 
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'))
+
+// Public directories to access generated PDFs and PNG's
+app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
+app.use('/screenshots', express.static(path.join(__dirname, 'screenshots')));
 
 app.set("view engine", "ejs");
 app.set('views', __dirname + '/views')
@@ -231,7 +236,7 @@ app.get('/pdf', async (req, res) => {
             await browser.close();
 
             console.log(fileName)
-            res.status(200).sendFile(path.join(__dirname, `/pdfs/${fileName}`));
+            res.status(200).send(`/pdfs/${fileName}`);
 
 
 
@@ -254,7 +259,7 @@ app.get('/pdf', async (req, res) => {
 
 
             console.log('There Seems To Be An Error: ' + e)
-            res.sendFile(path.join(__dirname, `/pdfs/default.pdf`));
+            res.send(`/pdfs/default.pdf`);
 
 
 
@@ -422,7 +427,7 @@ app.get('/screenshot', async (req, res) => {
                 console.log("Screenshot Successfully Generated")
 
                 // Sends Screenshot to user
-                await res.status(200).sendFile(path.join(__dirname, `/screenshots/${fileName}`));
+                await res.status(200).send(`/screenshots/${fileName}`);
 
 
             }
@@ -467,7 +472,7 @@ app.get('/screenshot', async (req, res) => {
         } catch (e) {
 
             console.log('There Seems To Be An Error: ' + e)
-            res.sendFile(path.join(__dirname, `/pdfs/default.pdf`));
+            res.send(`/pdfs/default.pdf`);
 
 
 
