@@ -221,13 +221,16 @@ app.get('/pdf', async (req, res) => {
                     })
             });
 
-
+            const headerTemplate = `<span style="font-size: 12px; width: 100%; height: auto; background-color: transparent; color: black; margin: 20px;">Domain: ${domainName}<br>Date Of Capture (M-D-Y): ${date} <br> Time Of Capture: ${time}</span>`;
+            
             // Prints to PDF and saves under PATH
             const pdf = await page.pdf({
                 path: `./pdfs/${domainName}_${date}_${time}_${fileId}.pdf`,
                 margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
                 printBackground: true,
                 format: 'A4',
+                displayHeaderFooter:true,
+                headerTemplate,
             });
 
 
